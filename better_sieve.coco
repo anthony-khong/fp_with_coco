@@ -1,0 +1,7 @@
+def sieve(numbers) =
+    x = next(numbers)
+    [x] :: sieve(filter(n -> n % x != 0, numbers))
+
+if __name__ == '__main__':
+    from itertools import count
+    count(2) |> sieve |> .$[:3000] |> list |> print

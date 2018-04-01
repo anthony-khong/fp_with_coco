@@ -1,0 +1,5 @@
+def sieve([x] :: xs) =
+    [x] :: sieve(n for n in xs if n % x)
+
+if __name__ == '__main__':
+    count(2) |> sieve |> .$[:3000] |> list |> print
