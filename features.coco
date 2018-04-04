@@ -1,0 +1,20 @@
+import numpy as np
+
+from pipeline import Estimator, Transformer
+
+def fmatrix(df, cond=None):
+    cond = cond or (_ -> True)
+    return df[[col for col in df if 'feat:' in col and cond(col)]]
+
+# TODO: add max bins
+def one_hot_encoder(column):
+    def transform(df, factors):
+        name = factor -> f'feat:{column}_is_{factor}'
+        for factor in factors:
+            df[name(factor)] = (df[column] == factor).values.astype(float)
+        return df
+
+    def fit(df):
+        factors = np.unique(df[column])
+        return Transformer(x -> transform(x, factors=factors))
+    return Estimator(fit)

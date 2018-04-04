@@ -1,0 +1,34 @@
+'''
+Pipeline Type Tetris
+--------------------
+
+Estimator = DataFrame -> Transformer
+Transformer = DataFrame -> DataFrame
+PipelineStage = Estimator | Transformer
+
+fit :: PipelineStage -> DataFrame -> Transformer
+transform :: Transformer -> DataFrame -> DataFrame
+fit_transform :: PipelineStage -> DataFrame -> DataFrame
+pipeline :: [PipelineStage] -> PipelineStage
+'''
+# TODO: safe fit and transform
+
+data Estimator(fit_fn)
+data Transformer(transform_fn)
+
+def fit(Estimator(fit_fn), df) = fit_fn(df)
+
+@addpattern(fit)
+def fit(Transformer(transform_fn), _) = Transformer(transform_fn)
+
+def transform(Transformer(transform_fn), df) = transform_fn(df)
+
+def fit_transform(stage, df) = transform(fit(stage, df), df)
+
+def mappend(Transformer(fn0), Transformer(fn1)) = Transformer(fn1..fn0)
+
+@addpattern(mappend)
+def mappend(stage0, stage1) = Estimator(df -> mappend(fit(stage0, df), fit(stage1, df)))
+
+def mconcat(stages) = reduce(mappend, stages)
+pipeline = mconcat

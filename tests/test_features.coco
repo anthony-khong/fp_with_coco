@@ -1,0 +1,18 @@
+import numpy as np
+import pandas as pd
+
+from pipeline import fit_transform
+from features import fmatrix, one_hot_encoder
+
+def test_one_hot_encoder():
+    df = pd.DataFrame({'some_id': [1, 2, 2, 1]})
+    estimator = one_hot_encoder('some_id')
+    xformed_df = fit_transform(estimator, df)
+    feats = fmatrix(xformed_df)
+    expected_feats = np.array([[1, 0],
+                               [0, 1],
+                               [0, 1],
+                               [1, 0]])
+    assert np.allclose(feats, expected_feats), 'One-hot encoding incorrect'
+
+
