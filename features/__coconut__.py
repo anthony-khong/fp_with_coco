@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x475423af
+# type: ignore
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
+
+"""Built-in Coconut utilities."""
 
 # Coconut Header: -------------------------------------------------------------
 
@@ -514,29 +516,3 @@ def fmap(func, obj):
         return "".join(args)
     return obj.__class__(args)
 _coconut_MatchError, _coconut_count, _coconut_enumerate, _coconut_reversed, _coconut_map, _coconut_starmap, _coconut_tee, _coconut_zip, reduce, takewhile, dropwhile = MatchError, count, enumerate, reversed, map, starmap, tee, zip, _coconut.functools.reduce, _coconut.itertools.takewhile, _coconut.itertools.dropwhile
-
-# Compiled Coconut: -----------------------------------------------------------
-
-import numpy as np
-
-from pipeline import Estimator
-from pipeline import Transformer
-
-def fmatrix(df, cond=None):
-    cond = cond or (lambda _: True)
-    return df[[col for col in df if 'feat:' in col and cond(col)]]
-
-# TODO: add max bins
-@_coconut_tco
-def one_hot_encoder(column):
-    def transform(df, factors):
-        name = lambda factor: f'feat:{column}_is_{factor}'
-        for factor in factors:
-            df[name(factor)] = (df[column] == factor).values.astype(float)
-        return df
-
-    @_coconut_tco
-    def fit(df):
-        factors = np.unique(df[column])
-        return _coconut_tail_call(Transformer, lambda x: transform(x, factors=factors))
-    return _coconut_tail_call(Estimator, fit)

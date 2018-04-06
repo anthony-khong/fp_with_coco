@@ -1,0 +1,3 @@
+def fmatrix(df, cond=None):
+    cond = cond or (_ -> True)
+    return df[[col for col in df if 'feat:' in col and cond(col)]]

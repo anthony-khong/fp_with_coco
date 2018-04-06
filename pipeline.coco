@@ -11,17 +11,16 @@ transform :: Transformer -> DataFrame -> DataFrame
 fit_transform :: PipelineStage -> DataFrame -> DataFrame
 pipeline :: [PipelineStage] -> PipelineStage
 '''
-# TODO: safe fit and transform
 
 data Estimator(fit_fn)
 data Transformer(transform_fn)
 
-def fit(Estimator(fit_fn), df) = fit_fn(df)
+def fit(Estimator(fit_fn), df) = fit_fn(copy(df))
 
 @addpattern(fit)
 def fit(Transformer(transform_fn), _) = Transformer(transform_fn)
 
-def transform(Transformer(transform_fn), df) = transform_fn(df)
+def transform(Transformer(transform_fn), df) = transform_fn(copy(df))
 
 def fit_transform(stage, df) = transform(fit(stage, df), df)
 
@@ -32,3 +31,5 @@ def mappend(stage0, stage1) = Estimator(df -> mappend(fit(stage0, df), fit(stage
 
 def mconcat(stages) = reduce(mappend, stages)
 pipeline = mconcat
+
+def copy(x) = x.copy() if hasattr(x, 'copy') else x
