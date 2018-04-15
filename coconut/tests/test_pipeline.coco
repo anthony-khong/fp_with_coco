@@ -2,7 +2,7 @@ import pytest
 
 from pipeline import (
         Estimator, Transformer,
-        fit, transform, fit_transform, mappend, mconcat,
+        fit, transform, fit_transform, mappend, mconcat, parallel_mconcat,
         MatchError
         )
 
@@ -53,5 +53,21 @@ def test_mconcat():
             Estimator(x -> Transformer(y -> x * y))
             ]
     assert transform(fit(mconcat(stages), 2), 3) == 72, (
+            'Mconcat does not order the stages correctly.'
+            )
+
+# These are required because parallel_mconcat cannot handle unpicklable objects
+def square(x) = x * x
+def add_transform(x) = Transformer((+)$(x))
+def multiply_transform(x) = Transformer((*)$(x))
+def test_parallel_mconcat():
+    stages = [
+            Transformer((+)$(1)),
+            Estimator(add_transform),
+            Transformer(square),
+            Estimator(multiply_transform)
+            ]
+    x = transform(fit(parallel_mconcat(stages), 2), 3)
+    assert transform(fit(parallel_mconcat(stages), 2), 3) == 72, (
             'Mconcat does not order the stages correctly.'
             )

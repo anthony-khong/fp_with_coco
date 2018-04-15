@@ -33,3 +33,6 @@ def mconcat(stages) = reduce(mappend, stages)
 pipeline = mconcat
 
 def copy(x) = x.copy() if hasattr(x, 'copy') else x
+
+def parallel_mconcat(stages) = Estimator(df -> mconcat(parallel_map(fit$(?, df), stages)))
+parallel_pipeline = parallel_mconcat

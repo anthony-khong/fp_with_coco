@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x3a0aab9d
+# __coconut_hash__ = 0x23dfb492
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
 
@@ -25,6 +25,7 @@ from pipeline import transform
 from pipeline import fit_transform
 from pipeline import mappend
 from pipeline import mconcat
+from pipeline import parallel_mconcat
 from pipeline import MatchError
 
 def test_fit():
@@ -59,3 +60,17 @@ def test_mappend():
 def test_mconcat():
     stages = [Transformer(lambda x: x + 1), Estimator(lambda x: Transformer(lambda y: x + y)), Transformer(lambda x: x * x), Estimator(lambda x: Transformer(lambda y: x * y))]
     assert transform(fit(mconcat(stages), 2), 3) == 72, ('Mconcat does not order the stages correctly.')
+
+# These are required because parallel_mconcat cannot handle unpicklable objects
+def square(x):
+    return x * x
+@_coconut_tco
+def add_transform(x):
+    return _coconut_tail_call(Transformer, _coconut.functools.partial(_coconut.operator.add, x))
+@_coconut_tco
+def multiply_transform(x):
+    return _coconut_tail_call(Transformer, _coconut.functools.partial(_coconut.operator.mul, x))
+def test_parallel_mconcat():
+    stages = [Transformer(_coconut.functools.partial(_coconut.operator.add, 1)), Estimator(add_transform), Transformer(square), Estimator(multiply_transform)]
+    x = transform(fit(parallel_mconcat(stages), 2), 3)
+    assert transform(fit(parallel_mconcat(stages), 2), 3) == 72, ('Mconcat does not order the stages correctly.')
