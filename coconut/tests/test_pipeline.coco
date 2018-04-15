@@ -56,16 +56,15 @@ def test_mconcat():
             'Mconcat does not order the stages correctly.'
             )
 
-# These are required because parallel_mconcat cannot handle unpicklable objects
+# This is required because parallel_mconcat cannot handle unpicklable objects
 def square(x) = x * x
-def add_transform(x) = Transformer((+)$(x))
-def multiply_transform(x) = Transformer((*)$(x))
 def test_parallel_mconcat():
     stages = [
             Transformer((+)$(1)),
             Estimator(add_transform),
+            Estimator(Transformer..(+)($))
             Transformer(square),
-            Estimator(multiply_transform)
+            Estimator(Transformer..(*)($))
             ]
     x = transform(fit(parallel_mconcat(stages), 2), 3)
     assert transform(fit(parallel_mconcat(stages), 2), 3) == 72, (
