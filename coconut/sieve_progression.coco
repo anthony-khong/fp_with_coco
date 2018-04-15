@@ -1,0 +1,62 @@
+# Original
+def sieve(numbers):
+    head = next(numbers)
+    yield head
+    yield from sieve(n for n in numbers if n % head)
+
+if __name__ == '__main__':
+    from itertools import count, takewhile
+    print(list(takewhile(lambda x: x < 500, sieve(count(2)))))
+
+# Nicer lambdas
+def sieve(numbers):
+    head = next(numbers)
+    yield head
+    yield from sieve(n for n in numbers if n % head)
+
+if __name__ == '__main__':
+    from itertools import count, takewhile
+    print(list(takewhile(x -> x < 500, sieve(count(2)))))
+
+# Pipe-forward style
+def sieve(numbers):
+    head = next(numbers)
+    yield head
+    yield from sieve(n for n in numbers if n % head)
+
+if __name__ == '__main__':
+    from itertools import count, takewhile
+    count(2) |> sieve |> xs -> takewhile(x -> x < 500, xs) |> list |> print
+
+# Currying
+def sieve(numbers):
+    head = next(numbers)
+    yield head
+    yield from sieve(n for n in numbers if n % head)
+
+if __name__ == '__main__':
+    from itertools import count, takewhile
+    count(2) |> sieve |> takewhile$(x -> x < 500) |> list |> print
+
+# Iterator chaining
+def sieve(numbers):
+    head = next(numbers)
+    return [head] :: sieve(n for n in numbers if n % head)
+
+if __name__ == '__main__':
+    from itertools import count, takewhile
+    count(2) |> sieve |> takewhile$(x -> x < 500) |> list |> print
+
+# Pattern-matching functions
+def sieve([head] :: tail):
+    return [head] :: sieve(n for n in tail if n % head)
+
+if __name__ == '__main__':
+    from itertools import count, takewhile
+    count(2) |> sieve |> takewhile$(x -> x < 500) |> list |> print
+
+# Bonuses
+def sieve([x] :: xs) = [x] :: sieve(n for n in xs if n % x)
+
+if __name__ == '__main__':
+    count(2) |> sieve |> takewhile$(x -> x < 500) |> list |> print
