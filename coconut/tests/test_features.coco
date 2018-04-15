@@ -1,24 +1,29 @@
 import numpy as np
 import pandas as pd
 
-from pipeline import fit_transform
+from pipeline import fit_transform, pipeline, parallel_pipeline
 from features import fmatrix, one_hot_encoder, one_hot_encoder_with_max_bins
 
 def test_one_hot_encoder():
-    df = pd.DataFrame({'some_id': [1, 2, 2, 1]})
+    df = pd.DataFrame({'some_id': [1, 2, 2, 1], 'some_other_id': [1, 2, 3, 3]})
     estimator = one_hot_encoder('some_id')
-    feats = fmatrix(fit_transform(estimator, df))
+    feats = fit_transform(estimator, df) |> fmatrix
     expected_feats = np.array([[1, 0],
                                [0, 1],
                                [0, 1],
                                [1, 0]])
     assert np.allclose(feats, expected_feats), 'One-hot encoding incorrect'
 
+    stages = [one_hot_encoder('some_id'), one_hot_encoder('some_other_id')]
+    feats = parallel_pipeline(stages) |> fit_transform$(?, df) |> fmatrix
+    expected_feats = pipeline(stages) |> fit_transform$(?, df) |> fmatrix
+    assert np.allclose(feats, expected_feats), 'Parallel one-hot encoding incorrect'
+
 def test_one_hot_encoder_with_max_bins():
     df = pd.DataFrame({'some_id': [1, 2, 3, 1, 2, 3], 'some_weights': [1, 2, 3, 4, 5, 6]})
 
     estimator = one_hot_encoder_with_max_bins('some_id', 'some_weights', max_bins=3)
-    feats = fmatrix(fit_transform(estimator, df))
+    feats = fit_transform(estimator, df) |> fmatrix
     expected_feats = np.array([[1, 0, 0],
                                [0, 1, 0],
                                [0, 0, 1],
@@ -28,7 +33,7 @@ def test_one_hot_encoder_with_max_bins():
     assert np.allclose(feats, expected_feats), 'One-hot encoding with max bins incorrect'
 
     estimator = one_hot_encoder_with_max_bins('some_id', 'some_weights', max_bins=2)
-    feats = fmatrix(fit_transform(estimator, df))
+    feats = fit_transform(estimator, df) |> fmatrix
     expected_feats = np.array([[0, 0],
                                [1, 0],
                                [0, 1],
@@ -38,7 +43,7 @@ def test_one_hot_encoder_with_max_bins():
     assert np.allclose(feats, expected_feats), 'One-hot encoding with max bins incorrect'
 
     estimator = one_hot_encoder_with_max_bins('some_id', 'some_weights', max_bins=1)
-    feats = fmatrix(fit_transform(estimator, df))
+    feats = fit_transform(estimator, df) |> fmatrix
     expected_feats = np.array([[0],
                                [0],
                                [1],
