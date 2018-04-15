@@ -1,9 +1,9 @@
 import numpy as np
 
-from pipeline import Estimator, Transformer, generic_estimator
+from pipeline import Estimator, Transformer
 
 def one_hot_encoder_with_max_bins(column, weight_column, max_bins):
-    return generic_estimator(fit_with_max_bins, transform, column, weight_column, max_bins)
+    return fit_with_max_bins$(column, weight_column, max_bins) |> Estimator
 
 def fit_with_max_bins(column, weight_column, max_bins, df):
     ix_map = map_of_indices(df[column])
@@ -13,7 +13,7 @@ def fit_with_max_bins(column, weight_column, max_bins, df):
         f_weights = {f: np.sum(df[weight_column].values[ix]) for f, ix in ix_map.items()}
         w_cutoff = f_weights.values() |> sorted |> list |> .[-(max_bins+1)]
         selected_factors = [f for f, w in f_weights.items() if w > w_cutoff]
-        return {'column': column, 'factors': selected_factors}
+        return transform$(column, selected_factors) |> Transformer
 
 def map_of_indices(values):
     ix_map = {}
@@ -25,14 +25,13 @@ def map_of_indices(values):
     return ix_map
 
 def one_hot_encoder(column):
-    return generic_estimator(fit, transform, column)
+    return fit$(column) |> Estimator
 
 def fit(column, df):
     factors = np.unique(df[column])
-    return {'column': column, 'factors': factors}
+    return transform$(column, factors) |> Transformer
 
-def transform(fit_dict, df):
-    {'column': column, 'factors': factors} = fit_dict
+def transform(column, factors, df):
     name = factor -> f'feat:{column}_is_{factor}'
     feats = {name(f): (df[column].values == f).astype(float) for f in factors}
     return df.assign(**feats)

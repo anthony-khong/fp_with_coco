@@ -36,6 +36,3 @@ def copy(x) = x.copy() if hasattr(x, 'copy') else x
 
 def parallel_mconcat(stages) = Estimator(df -> mconcat(parallel_map(fit$(?, df), stages)))
 parallel_pipeline = parallel_mconcat
-
-def generic_estimator(fit_fn, transform_fn, *args, **kwargs):
-    return Estimator(Transformer..transform_fn$..fit_fn$(*args, **kwargs))
