@@ -34,7 +34,5 @@ def fit(column, df):
 def transform(fit_dict, df):
     {'column': column, 'factors': factors} = fit_dict
     name = factor -> f'feat:{column}_is_{factor}'
-    for factor in factors:
-        df[name(factor)] = (df[column] == factor).values.astype(float)
-    return df
-
+    feats = {name(f): (df[column].values == f).astype(float) for f in factors}
+    return df.assign(**feats)
