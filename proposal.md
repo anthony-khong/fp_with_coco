@@ -3,9 +3,11 @@ Proposal Plan
 
 # Pythonic Functional Programming with Coconut
 
-Talk Format: Short Talk (30 minutes)
-Audience Level: Intermediate/Specialised
-Tags: Python, ML
+**Talk Format:** Short Talk (30 minutes)
+
+**Audience Level:** Intermediate/Specialised
+
+**Tags:** Python, ML
 
 ## Elevator Pitch
 
@@ -13,7 +15,7 @@ Writing functional-style Python can be challenging. The challenges range from mi
 
 ## Public Abstract
 
-Writing functional code in Python can be both fun and frustrating at the same time. With functions being first-class citizens, Python allows us to build programmes with higher-order functions. However, it is often cumbersome to do something that would be bread-and-butter in a typical functional language. The lack of concise syntax for lambdas, currying and function compositions is a nuisance. The lack of boilerplate-less pattern matching and pattern matching could be a deal breaker. This talk presents Coconut, a functional superset of Python, which aims to enable writing elegant functional code, whilst staying with the familiar Python environment and libraries. In this talk, we will identify various pain points of writing functional code in Python, and demonstrates how Coconut addresses the problems. In particular, we will start with a basic coding problem, and move on to designing a machine-learning pipeline with a functional approach.
+With functions being first-class citizens, Python allows us to build programmes with higher-order functions. However, it is often cumbersome to do something that would be bread-and-butter in a typical functional language. The lack of concise syntax for lambdas, currying and function compositions is a nuisance. The lack of boilerplate-less pattern matching and iterator chaining could be a deal breaker. This talk presents Coconut, a functional superset of Python, which aims to enable writing elegant functional code, whilst staying with the familiar Python environment and libraries. We will identify various pain points of writing functional code in Python, and demonstrates how Coconut addresses the problems. In particular, we will start with a basic coding problem, and move on to designing a machine-learning pipeline with a functional approach.
 
 ## Private Abstract and Timing Overview
 
@@ -46,11 +48,11 @@ Writing functional code in Python can be both fun and frustrating at the same ti
     - We would not have noticed pipeline as monoid.
 - 25-30 minutes: Taking Coconut even further:
     - Functor example: one-hot encoder coalescing.
-    - Parrallel example: parallel pipeline stage.
+    - Parallel example: parallel pipeline stage.
     - Static typing with MyPy.
 
 ## Biography
 
-I am a data scientist in Agoda, an innovative accommodation website that places a huge emphasis in machine learning algorithms. I have been using Python on a daily basis since 2013 as a freelance data scientist and algorthmic trader. I am also a functional programming enthusiast, and my experience mainly comes from writing Scala code in Agoda and using Haskell for scripting. I enjoy writing functional-style code in Python, and have been actively trying to marry the two for years. My other passion include high-performance computing, Bayesian statistics and Vim.
+I am a data scientist working at Agoda, an innovative accommodation website that places a huge emphasis in machine learning algorithms. I have been using Python on a daily basis since 2013 as a freelance data scientist and algorithmic trader. I am also a functional programming enthusiast, and my experience mainly comes from writing Scala code in Agoda and using Haskell for scripting. I enjoy writing functional-style code in Python, and have been actively trying to marry the two for years. My other passion include high-performance computing, Bayesian statistics and Vim.
 
-I have never spoken in a conference before. However, I have a number of public speaking experiences such as training on experimentation in Agoda and giving undergraduate-level lectures in machine learning and economics. I have also been involved in a few pro-bono projects that required public speaking.
+I have never spoken in a conference before. However, I have a number of public speaking experiences such as training in Agoda and giving undergraduate-level lectures in machine learning and economics. I have also been involved in a few pro-bono projects that required public speaking.
