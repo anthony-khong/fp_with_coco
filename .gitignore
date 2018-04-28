@@ -1,3 +1,4 @@
 coconut/*.py
 *mypy*
 *cache*
+*.pdf
