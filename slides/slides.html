@@ -7,10 +7,10 @@
         <title>reveal.js</title>
 
         <link rel="stylesheet" href="css/reveal.css">
-        <link rel="stylesheet" href="css/theme/black.css">
+        <link rel="stylesheet" href="css/theme/simple.css">
 
         <!-- Theme used for syntax highlighting of code -->
-        <link rel="stylesheet" href="lib/css/zenburn.css">
+        <link rel="stylesheet" href="lib/css/solarized.css">
 
         <!-- Printing and PDF exports -->
         <script>
@@ -22,202 +22,333 @@
         </script>
     </head>
     <body>
-        <div class="reveal">
-            <!--@@@@@ START OF SLIDES @@@@@-->
-            <div class="slides">
-                <section data-markdown>
-                    <textarea data-template>
-                        ## Pythonic Functional Programming with Coconut
+        <div class="reveal"> <div class="slides">
+            <section id="title_page">
+                <h2><span style="color:slateblue">Pythonic Functional Programming with Coconut</span></h2>
+                <h4>Anthony Khong</h4>
+                <h4>16 June 2018</h4>
+            </section>
 
-                        Anthony Khong
-
-                        16 June 2018
-                    </textarea>
+            <section id="fp">
+                <section id="fp_title_page">
+                    <h2> <span style="color:slateblue">Functional Programming</span></h2>
                 </section>
-
-                <section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ## What is Functional Programming?
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Immutability
-
-                            Once assigned, an expression <span style="color:red">**cannot**</span> change value.
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Example: Mutability in Python
-
-                            Snippet A:
-                            ```python
-                            >>> xs = [1, 2, 3]
-                            >>> xs.reverse()
-                            >>> ys = xs
-                            >>> ys[0] = -999
-                            >>> (xs, ys)
-                            ???
-                            ```
-                            Snippet B:
-                            ```python
-                            >>> xs = [1, 2, 3]
-                            >>> ys = xs[::-1]
-                            >>> ys[0] = -999
-                            >>> (xs, ys)
-                            ???
-                            ```
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Example: Mutability in Python
-
-                            Snippet A:
-                            ```python
-                            >>> xs = [1, 2, 3]
-                            >>> xs.reverse()
-                            >>> ys = xs
-                            >>> ys[0] = -999
-                            >>> (xs, ys)
-                            ([-999, 2, 1], [-999, 2, 1])
-                            ```
-                            Snippet B:
-                            ```python
-                            >>> xs = [1, 2, 3]
-                            >>> ys = xs[::-1]
-                            >>> ys[0] = -999
-                            >>> (xs, ys)
-                            ([1, 2, 3], [-999, 2, 1])
-                            ```
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Example: Immutability in Haskell
-
-                            ```haskell
-                            λ> xs = [1, 2, 3]
-                            λ> ys = -999 : tail (reverse xs)
-                            λ> (xs, ys)
-                            ([1,2,3],[-999,2,1])
-                            ```
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ## Why Immutability?
-
-                            Our code becomes more predictable and easier to reason about.
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Example: Unpredictability in Python
-
-                            ```python
-                            >>> def g(x):
-                            ...     ???
-                            ...
-                            >>> def f(x):
-                            ...     return x + [999]
-                            ...
-                            >>> xs = [1, 2, 3]
-                            >>> ys = g(xs)
-                            >>> f(xs)
-                            ???
-                            ```
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Example: Unpredictability in Python
-
-                            ```python
-                            >>> def g(x):
-                            ...     x.reverse()
-                            ...     return x
-                            ...
-                            >>> def f(x):
-                            ...     return x + [999]
-                            ...
-                            >>> xs = [1, 2, 3]
-                            >>> ys = g(xs)
-                            >>> f(xs)
-                            [3, 2, 1, 999]
-                            ```
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Example: Predictability in Haskell
-
-                            ```haskell
-                            λ> g x = ???
-                            λ> f x = x ++ [999]
-                            λ> xs = [1, 2, 3]
-                            λ> ys = g xs
-                            λ> f xs
-                            ???
-                            ```
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Example: Predictability in Haskell
-
-                            ```haskell
-                            λ> g x = undefined
-                            λ> f x = x ++ [999]
-                            λ> xs = [1, 2, 3]
-                            λ> ys = g xs
-                            λ> f xs
-                            [1,2,3,999]
-                            ```
-                        </textarea>
-                    </section>
+                <section id="immutability">
+                    <h2> <span style="color:slateblue">Immutability</span></h2>
+                    <p>Once assigned, a variable <span style="color:red">cannot</span> change its value.</p>
                 </section>
+                <section data-markdown id="python_immutability1"><textarea data-template>
+                    ```python
+                    >>> def g(xs):
+                    ...     ???
+                    ...
+                    >>> def f(xs):
+                    ...     return xs + [999]
+                    ...
+                    >>> xs = [1, 2, 3]
+                    >>> ys = g(xs)
+                    >>> f(xs)
+                    ???
+                    ```
+                </textarea></section>
+                <section data-markdown id="python_immutability2"><textarea data-template>
+                    ```python
+                    >>> def g(xs):
+                    ...     xs.reverse()
+                    ...     return xs
+                    ...
+                    >>> def f(xs):
+                    ...     return xs + [999]
+                    ...
+                    >>> xs = [1, 2, 3]
+                    >>> ys = g(xs)
+                    >>> f(xs)
+                    [3, 2, 1, 999]
+                    ```
+                </textarea></section>
+                <section data-markdown id="python_immutability3"><textarea data-template>
+                    ```python
+                    >>> def g(xs):
+                    ...     return xs[::-1]
+                    ...
+                    >>> def f(xs):
+                    ...     return xs + [999]
+                    ...
+                    >>> xs = [1, 2, 3]
+                    >>> ys = g(xs)
+                    >>> f(xs)
+                    [1, 2, 3, 999]
+                    ```
+                </textarea></section>
+                <section data-markdown id="haskell_immutability1"><textarea data-template>
+                    ```haskell
+                    λ> g x = ???
+                    λ> f x = x ++ [999]
+                    λ> xs = [1, 2, 3]
+                    λ> ys = g xs
+                    λ> f xs
+                    ???
+                    ```
+                </textarea></section>
+                <section data-markdown id="haskell_immutability2"><textarea data-template>
+                    ```haskell
+                    λ> g x = undefined
+                    λ> f x = x ++ [999]
+                    λ> xs = [1, 2, 3]
+                    λ> ys = g xs
+                    λ> f xs
+                    [1, 2, 3, 999]
+                    ```
+                </textarea></section>
+                <section data-markdown id="haskell_immutability3"><textarea data-template>
+                    ```haskell
 
-                <section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ## What is Functional Style Programming?
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Declarative Programming
+                    λ> f x = x ++ [999]
+                    λ> xs = [1, 2, 3]
 
-                            Say what things <span style="color:slateblue">**are**</span>.
-
-                            Instead of saying what things <span style="color:red">**to do next**</span>.
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Higher-Order Functions and Function Composition
-
-                            Rely on the <span style="color:slateblue">**composition**</span> of abstract high-level functions that <span style="color:slateblue">**parameterise behaviours**</span> to achieve complex tasks.
-                        </textarea>
-                    </section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Language Features for FP
-
-                            * <span style="color:darkslateblue">First class functions</span>
-                            * <span style="color:darkslateblue">Lambdas</span>
-                            * <span style="color:slateblue">Currying</span>
-                            * <span style="color:slateblue">Function composition</span>
-                            * <span style="color:darkviolet">Algebraic data types</span>
-                            * <span style="color:darkviolet">Pattern matching</span>
-                        </textarea>
-                    </section>
+                    λ> f xs
+                    [1, 2, 3, 999]
+                    ```
+                </textarea></section>
+                <section id="immutability_gives_predictability">
+                    <h3><span style="color:slateblue">Immutability gives us predictability</span></h3>
+                    <aside class="notes">
+                        There are many names for this: purity and referential transparency.
+                    </aside>
                 </section>
-            </div>
-            <!--@@@@@ END OF SLIDES @@@@@-->
-        </div>
+            </section>
+
+            <section id="fps">
+                <section id="fps_title_page">
+                    <h2><span style="color:slateblue">Functional Style Programming</span></h2>
+                    <span style="color:blue">Declarative</span> rather than <span style="color:red"> imperative</span>.
+                </section>
+                <section id="fps_deal_breakers">
+                    <h2><span style="color:slateblue">Deal Breakers</span></h2>
+                    <ul>
+                        <li>First-class functions</li>
+                        <li>Lambdas</li>
+                    </ul>
+                </section>
+                <section id="fps_nice_to_haves">
+                    <h2><span style="color:slateblue">Nice-To-Haves</span></h2>
+                    <ul>
+                        <li>Currying</li>
+                        <li>Function composition</li>
+                        <li>Algebraic data types</li>
+                        <li>Pattern matching</li>
+                        <li>Lazy lists</li>
+                    </ul>
+                    <!--TODO: add a coconut image.-->
+                </section>
+                <section id="sieve_subtitle_page">
+                    <h2><span style="color:slateblue">Sieve of Eratosthenes</span></h2>
+                </section>
+                <section id="sieve_init">
+                    <img data-src="figures/sieve.png" width="66%">
+                </section>
+                <section id="sieve_animation">
+                    <img data-src="figures/sieve.gif" width="66%">
+                </section>
+                <section data-markdown id="sieve_haskell"><textarea data-template>
+                    <h4><span style="color:slateblue">Haskell</span></h4>
+                    ```haskell
+                    primes :: [Int]
+                    primes = sieve [2..]
+                    where
+                        sieve (x:xs) = x : sieve (filter (\n -> n `rem` x /= 0) xs)
+                        sieve []     = []
+
+                    λ> takeWhile (<60) primes
+                    [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="sieve_python"><textarea data-template>
+                    <h4><span style="color:darkgreen">Python</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes():
+                        def sieve(numbers):
+                            head = next(numbers)
+                            yield head
+                            yield from sieve(n for n in numbers if n % head)
+                        return sieve(count(2))
+
+                    >>> list(takewhile(lambda x: x < 60, primes()))
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="sieve_coconut"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Coconut</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes():
+                        def sieve(numbers):
+                            head = next(numbers)
+                            yield head
+                            yield from sieve(n for n in numbers if n % head)
+                        return sieve(count(2))
+
+                    >>> list(takewhile(lambda x: x < 60, primes()))
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="concise_lambdas"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Concise Lambdas</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes():
+                        def sieve(numbers):
+                            head = next(numbers)
+                            yield head
+                            yield from sieve(n for n in numbers if n % head)
+                        return sieve(count(2))
+
+                    >>> list(takewhile(x -> x < 60, primes()))
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="forward_piping"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Forward Piping</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes():
+                        def sieve(numbers):
+                            head = next(numbers)
+                            yield head
+                            yield from sieve(n for n in numbers if n % head)
+                        return sieve(count(2))
+
+                    >>> primes() |> ps -> takewhile(x -> x < 60, ps) |> list
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="currying"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Currying</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes():
+                        def sieve(numbers):
+                            head = next(numbers)
+                            yield head
+                            yield from sieve(n for n in numbers if n % head)
+                        return sieve(count(2))
+
+                    >>> primes() |> takewhile$(x -> x < 60) |> list
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="iterator_chaining"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Iterator Chaining</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes():
+                        def sieve(numbers):
+                            head = next(numbers)
+                            return [head] :: sieve(n for n in numbers if n % head)
+                        return sieve(count(2))
+
+                    >>> primes() |> takewhile$(x -> x < 60) |> list
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="pattern_matching"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Pattern Matching</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes():
+                        def sieve([head] :: tail):
+                            return [head] :: sieve(n for n in tail if n % head)
+                        return sieve(count(2))
+
+                    >>> primes() |> takewhile$(x -> x < 60) |> list
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="function_assignments"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Function Assignments</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes() =
+                        def sieve([x] :: xs) = [x] :: sieve(n for n in xs if n % x)
+                        sieve(count(2))
+
+                    >>> primes() |> takewhile$(x -> x < 60) |> list
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+                <section data-markdown id="builtin_hofs"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Builtin Higher-Order Functions</span></h4>
+                    ```python
+                    def primes() =
+                        def sieve([x] :: xs) = [x] :: sieve(n for n in xs if n % x)
+                        sieve(count(2))
+
+                    >>> primes() |> takewhile$(x -> x < 60) |> list
+                    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+                    ```
+                </textarea></section>
+
+                <section data-markdown id="coconut_vs_python"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Coconut</span></h4>
+                    ```python
+                    def primes() =
+                        def sieve([x] :: xs) = [x] :: sieve(n for n in xs if n % x)
+                        sieve(count(2))
+
+                    >>> primes() |> takewhile$(x -> x < 60) |> list
+                    ```
+
+                    <h4><span style="color:darkgreen">Python</span></h4>
+                    ```python
+                    from itertools import count, takewhile
+
+                    def primes():
+                        def sieve(numbers):
+                            head = next(numbers)
+                            yield head
+                            yield from sieve(n for n in numbers if n % head)
+                        return sieve(count(2))
+
+                    >>> list(takewhile(x -> x < 60, primes()))
+                    ```
+                </textarea></section>
+                <section data-markdown id="coconut_and_haskell"><textarea data-template>
+                    <h4><span style="color:mediumseagreen">Coconut</span></h4>
+                    ```python
+                    def primes() =
+                        def sieve([x] :: xs) = [x] :: sieve(n for n in xs if n % x)
+                        sieve(count(2))
+
+                    >>> primes() |> takewhile$(x -> x < 60) |> list
+                    ```
+
+                    <h4><span style="color:slateblue">Haskell</span></h4>
+                    ```haskell
+                    primes :: [Int]
+                    primes = sieve [2..]
+                    where
+                        sieve (x:xs) = x : sieve (filter (\n -> n `rem` x /= 0) xs)
+                        sieve []     = []
+
+                    λ> takeWhile (<60) primes
+                    ```
+                </textarea></section>
+                <section id="vince_macmahon">
+                    <img data-src="figures/vince_macmahon.gif" width="85%">
+                </section>
+            </section>
+
+
+        </div> </div>
         <script src="lib/js/head.min.js"></script>
         <script src="js/reveal.js"></script>
 
@@ -226,6 +357,8 @@
             // - https://github.com/hakimel/reveal.js#configuration
             // - https://github.com/hakimel/reveal.js#dependencies
             Reveal.initialize({
+                transition: "none",
+                history: true,
                 math: {
                     mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
                     config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
