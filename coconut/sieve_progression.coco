@@ -1,59 +1,81 @@
 # Original
-def sieve(numbers):
-    head = next(numbers)
-    yield head
-    yield from sieve(n for n in numbers if n % head)
-
+from itertools import count, takewhile
+def primes():
+    def sieve(numbers):
+        head = next(numbers)
+        yield head
+        yield from sieve(filter(x -> x % head, numbers))
+    return sieve(count(2))
 if __name__ == '__main__':
-    from itertools import count, takewhile
-    print(list(takewhile(lambda x: x < 500, sieve(count(2)))))
+    print(list(takewhile(lambda x: x < 250, primes())))
 
 # Nicer lambdas
-def sieve(numbers):
-    head = next(numbers)
-    yield head
-    yield from sieve(n for n in numbers if n % head)
-
+from itertools import count, takewhile
+def primes():
+    def sieve(numbers):
+        head = next(numbers)
+        yield head
+        yield from sieve(n for n in numbers if n % head)
+    return sieve(count(2))
 if __name__ == '__main__':
-    from itertools import count, takewhile
-    print(list(takewhile(x -> x < 500, sieve(count(2)))))
+    print(list(takewhile(x -> x < 250, primes())))
 
-# Pipe-forward style
-def sieve(numbers):
-    head = next(numbers)
-    yield head
-    yield from sieve(n for n in numbers if n % head)
-
+# Forward Piping
+from itertools import count, takewhile
+def primes():
+    def sieve(numbers):
+        head = next(numbers)
+        yield head
+        yield from sieve(n for n in numbers if n % head)
+    return sieve(count(2))
 if __name__ == '__main__':
-    from itertools import count, takewhile
-    count(2) |> sieve |> xs -> takewhile(x -> x < 500, xs) |> list |> print
+    primes() |> ps -> takewhile(x -> x < 250, ps) |> list |> print
 
 # Currying
-def sieve(numbers):
-    head = next(numbers)
-    yield head
-    yield from sieve(n for n in numbers if n % head)
-
+from itertools import count, takewhile
+def primes():
+    def sieve(numbers):
+        head = next(numbers)
+        yield head
+        yield from sieve(n for n in numbers if n % head)
+    return sieve(count(2))
 if __name__ == '__main__':
-    from itertools import count, takewhile
-    count(2) |> sieve |> takewhile$(x -> x < 500) |> list |> print
+    primes() |> takewhile$(x -> x < 250) |> list |> print
 
-# Iterator chaining
-def sieve(numbers):
-    head = next(numbers)
-    return [head] :: sieve(n for n in numbers if n % head)
-
+# Iterator Chaining
+from itertools import count, takewhile
+def primes():
+    def sieve(numbers):
+        head = next(numbers)
+        return [head] :: sieve(n for n in numbers if n % head)
+    return sieve(count(2))
 if __name__ == '__main__':
-    from itertools import count, takewhile
-    count(2) |> sieve |> takewhile$(x -> x < 500) |> list |> print
+    primes() |> takewhile$(x -> x < 250) |> list |> print
 
-# Pattern-matching functions
-def sieve([head] :: tail):
-    return [head] :: sieve(n for n in tail if n % head)
-
+# Pattern-matching
+from itertools import count, takewhile
+def primes():
+    def sieve([head] :: tail):
+        return [head] :: sieve(n for n in tail if n % head)
+    return sieve(count(2))
 if __name__ == '__main__':
-    from itertools import count, takewhile
-    count(2) |> sieve |> takewhile$(x -> x < 500) |> list |> print
+    primes() |> takewhile$(x -> x < 250) |> list |> print
+
+# Function Assignments
+from itertools import count, takewhile
+def primes() =
+    def sieve([x] :: xs) = [x] :: sieve(n for n in xs if n % x)
+    sieve(count(2))
+if __name__ == '__main__':
+    primes() |> takewhile$(x -> x < 250) |> list |> print
+
+# No more imports
+def primes() =
+    def sieve([x] :: xs) = [x] :: sieve(n for n in xs if n % x)
+    sieve(count(2))
+if __name__ == '__main__':
+    primes() |> takewhile$(x -> x < 250) |> list |> print
+
 
 # Bonuses
 def sieve([x] :: xs) = [x] :: sieve(n for n in xs if n % x)

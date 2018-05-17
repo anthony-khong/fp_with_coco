@@ -1,6 +1,8 @@
-sieve :: [Int] -> [Int]
-sieve (x:xs) = x : (sieve $ filter (\n -> n `mod` x /= 0) xs)
-sieve []     = []
+primes :: [Int]
+primes = sieve [2..]
+  where
+    sieve (x:xs) = x : sieve (filter (\n -> n `rem` x /= 0) xs)
+    sieve []     = []
 
 main :: IO ()
-main = print $ takeWhile (< 500) (sieve [2..])
+main = print $ takeWhile (< 250) primes
