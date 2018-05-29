@@ -1,5 +1,8 @@
 import pytest
 
+import numpy as np
+import pandas as pd
+
 from pipeline import (
         Estimator, Transformer,
         fit, transform, fit_transform, mappend, mconcat, parallel_mconcat,
@@ -48,24 +51,29 @@ def test_mappend():
 def test_mconcat():
     stages = [
             Transformer(x -> x + 1),
-            Estimator(x -> Transformer(y -> x + y)),
+            Estimator(x -> Transformer(y -> x + y)), # Tranformer(y -> 3 + y)
             Transformer(x -> x*x),
-            Estimator(x -> Transformer(y -> x * y))
+            Estimator(x -> Transformer(y -> x * y)) # Transformer(y -> 36 * y)
             ]
-    assert transform(fit(mconcat(stages), 2), 3) == 72, (
+    assert transform(fit(mconcat(stages), 2), 3) == 1764, (
             'Mconcat does not order the stages correctly.'
             )
 
-# This is required because parallel_mconcat cannot handle unpicklable objects
-def square(x) = x * x
-def test_parallel_mconcat():
-    stages = [
-            Transformer((+)$(1)),
-            Estimator(Transformer..((+)$)),
-            Transformer(square),
-            Estimator(Transformer..((*)$))
-            ]
-    x = transform(fit(parallel_mconcat(stages), 2), 3)
-    assert transform(fit(parallel_mconcat(stages), 2), 3) == 72, (
-            'Mconcat does not order the stages correctly.'
-            )
+def test_back_to_back_stages():
+    df = pd.DataFrame({'a': [1, 2, 3]})
+    transformer = mconcat([
+            Transformer(df -> df.assign(b=df.a + 1)),
+            Transformer(df -> df.assign(c=df.b + 1))
+            ])
+    fitted_df = fit_transform(transformer, df)
+    assert np.allclose(fitted_df.c, [3, 4, 5]), 'Back to back xform does not work.'
+
+    def dependent_fit(df):
+        assert 'b' in df
+        return Transformer(df -> df.assign(c=df.b * 2))
+    estimator = mconcat([
+            Transformer(df -> df.assign(b=df.a + 1)),
+            Estimator(dependent_fit)
+            ])
+    fitted_df = fit_transform(estimator, df)
+    assert np.allclose(fitted_df.c, [4, 6, 8]), 'Back to back fit does not work.'

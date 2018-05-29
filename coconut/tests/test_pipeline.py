@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xaf0d9dad
+# __coconut_hash__ = 0x3759f031
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
 
@@ -519,6 +519,9 @@ _coconut_MatchError, _coconut_count, _coconut_enumerate, _coconut_reversed, _coc
 
 import pytest
 
+import numpy as np
+import pandas as pd
+
 from pipeline import Estimator
 from pipeline import Transformer
 from pipeline import fit
@@ -560,12 +563,18 @@ def test_mappend():
 
 def test_mconcat():
     stages = [Transformer(lambda x: x + 1), Estimator(lambda x: Transformer(lambda y: x + y)), Transformer(lambda x: x * x), Estimator(lambda x: Transformer(lambda y: x * y))]
-    assert transform(fit(mconcat(stages), 2), 3) == 72, ('Mconcat does not order the stages correctly.')
+    assert transform(fit(mconcat(stages), 2), 3) == 1764, ('Mconcat does not order the stages correctly.')
 
-# This is required because parallel_mconcat cannot handle unpicklable objects
-def square(x):
-    return x * x
-def test_parallel_mconcat():
-    stages = [Transformer(_coconut.functools.partial(_coconut.operator.add, 1)), Estimator(_coconut_forward_compose((_coconut.functools.partial(_coconut.functools.partial, _coconut.operator.add)), Transformer)), Transformer(square), Estimator(_coconut_forward_compose((_coconut.functools.partial(_coconut.functools.partial, _coconut.operator.mul)), Transformer))]
-    x = transform(fit(parallel_mconcat(stages), 2), 3)
-    assert transform(fit(parallel_mconcat(stages), 2), 3) == 72, ('Mconcat does not order the stages correctly.')
+def test_back_to_back_stages():
+    df = pd.DataFrame({'a': [1, 2, 3]})
+    transformer = mconcat([Transformer(lambda df: df.assign(b=df.a + 1)), Transformer(lambda df: df.assign(c=df.b + 1))])
+    fitted_df = fit_transform(transformer, df)
+    assert np.allclose(fitted_df.c, [3, 4, 5]), 'Back to back xform does not work.'
+
+    @_coconut_tco
+    def dependent_fit(df):
+        assert 'b' in df
+        return _coconut_tail_call(Transformer, lambda df: df.assign(c=df.b * 2))
+    estimator = mconcat([Transformer(lambda df: df.assign(b=df.a + 1)), Estimator(dependent_fit)])
+    fitted_df = fit_transform(estimator, df)
+    assert np.allclose(fitted_df.c, [4, 6, 8]), 'Back to back fit does not work.'

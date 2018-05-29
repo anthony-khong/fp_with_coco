@@ -1,0 +1,33 @@
+import pandas as pd
+
+from pipeline import Transformer, pipeline
+from features import one_hot_encoder
+from network import feedforward
+
+def add_column(name, fn):
+    return df.assign(**{name: fn(df)}) |> Transformer
+
+def add_as_feature(name):
+    return df.assign(**{f'feat:{name}': df[name]})
+
+if __name__ == '__main__':
+    df = pd.read_csv('titanic.csv')
+    model = pipeline([
+        # Data processing
+        add_column('CabinStr', df -> df.Cabin.astype(str)),
+
+        # Feature engineering
+        add_as_feature('Fare'),
+        add_as_feature('Age'),
+        add_as_feature('SibSp'),
+        add_as_feature('SibSp'),
+        one_hot_encoder('Parch'),
+        one_hot_encoder('Embarked'),
+        one_hot_encoder('CabinStr'),
+        one_hot_encoder('Pclass'),
+        add_column('feat:name_length', df -> len(df.Name)),
+        add_column('feat:is_married_woman', df -> [int('Mrs.') in x for x in df.Name.val]),
+
+        # Model
+
+        ])

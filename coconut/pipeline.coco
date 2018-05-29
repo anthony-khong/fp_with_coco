@@ -29,7 +29,12 @@ def mempty() = Transformer(df -> df)
 def mappend(Transformer(fn0), Transformer(fn1)) = Transformer(fn1..fn0)
 
 @addpattern(mappend)
-def mappend(stage0, stage1) = Estimator(df -> mappend(fit(stage0, df), fit(stage1, df)))
+def mappend(stage0, stage1) =
+    def fit_fn(df) =
+        xformer0 = fit(stage0, df)
+        xformer1 = fit(stage1, transform(xformer0, df))
+        mappend(xformer0, xformer1)
+    Estimator(fit_fn)
 
 def mconcat(stages) = reduce(mappend, stages)
 pipeline = mconcat
