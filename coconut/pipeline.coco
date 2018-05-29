@@ -13,16 +13,18 @@ pipeline :: [PipelineStage] -> PipelineStage
 '''
 
 data Estimator(fit_fn)
-data Transformer(transform_fn)
+data Transformer(xform_fn)
+
+def transform(Transformer(xform_fn), df) = xform_fn(copy(df))
 
 def fit(Estimator(fit_fn), df) = fit_fn(copy(df))
 
 @addpattern(fit)
-def fit(Transformer(transform_fn), _) = Transformer(transform_fn)
-
-def transform(Transformer(transform_fn), df) = transform_fn(copy(df))
+def fit(Transformer(xform_fn), _) = Transformer(xform_fn)
 
 def fit_transform(stage, df) = transform(fit(stage, df), df)
+
+def mempty() = Transformer(df -> df)
 
 def mappend(Transformer(fn0), Transformer(fn1)) = Transformer(fn1..fn0)
 
