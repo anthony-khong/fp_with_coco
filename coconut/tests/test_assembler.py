@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xaf0d9dad
+# __coconut_hash__ = 0x59e1f15c
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
 
@@ -517,55 +517,18 @@ _coconut_MatchError, _coconut_count, _coconut_enumerate, _coconut_reversed, _coc
 
 # Compiled Coconut: -----------------------------------------------------------
 
-import pytest
+import numpy as np
+import pandas as pd
 
-from pipeline import Estimator
-from pipeline import Transformer
-from pipeline import fit
-from pipeline import transform
 from pipeline import fit_transform
-from pipeline import mappend
-from pipeline import mconcat
-from pipeline import parallel_mconcat
-from pipeline import MatchError
+from pipeline import pipeline
+from features import assembler
+from features import one_hot_encoder
 
-def test_fit():
-    estimator = Estimator(lambda x: Transformer(lambda y: x + y))
-    transformer = fit(estimator, 1)
-    assert transformer.xform_fn(2) == 3, 'Fit function on Estimator is incorrect.'
-
-    transformer = Transformer(lambda x: x + 1)
-    fitted_transformer = fit(transformer, 2)
-    assert fitted_transformer.xform_fn(3) == 4, 'Fit function on Transformer incorrect.'
-
-def test_transform():
-    with pytest.raises(MatchError):
-        transform(Estimator(None), 1)
-
-    transformer = Transformer(lambda x: x * x)
-    assert transform(transformer, 5) == 5 * 5, 'Transform function on Transformer incorrect.'
-
-def test_mappend():
-    xformer0 = Transformer(lambda x: x + 1)
-    xformer1 = Transformer(lambda x: x * x)
-    assert mappend(xformer0, xformer1).xform_fn(5) == 36, ('Mappend function on (Transformer, Transformer) incorrect.')
-    assert mappend(xformer1, xformer0).xform_fn(5) == 26, ('Mappend function on (Transformer, Transformer) ignores order.')
-
-    estimator0 = Estimator(lambda _: Transformer(lambda x: x + 1))
-    assert fit_transform(mappend(estimator0, xformer0), 1) == 3, ('Mappend function on (Estimator, Transformer) incorrect.')
-    assert fit_transform(mappend(xformer1, estimator0), 2) == 5, ('Mappend function on (Transformer, Estimator) incorrect.')
-
-    estimator1 = Estimator(lambda _: Transformer(lambda x: x * x * x))
-    assert fit_transform(mappend(estimator0, estimator1), 1) == 8, ('Mappend function on (Estimator, Estimator) incorrect.')
-
-def test_mconcat():
-    stages = [Transformer(lambda x: x + 1), Estimator(lambda x: Transformer(lambda y: x + y)), Transformer(lambda x: x * x), Estimator(lambda x: Transformer(lambda y: x * y))]
-    assert transform(fit(mconcat(stages), 2), 3) == 72, ('Mconcat does not order the stages correctly.')
-
-# This is required because parallel_mconcat cannot handle unpicklable objects
-def square(x):
-    return x * x
-def test_parallel_mconcat():
-    stages = [Transformer(_coconut.functools.partial(_coconut.operator.add, 1)), Estimator(_coconut_forward_compose((_coconut.functools.partial(_coconut.functools.partial, _coconut.operator.add)), Transformer)), Transformer(square), Estimator(_coconut_forward_compose((_coconut.functools.partial(_coconut.functools.partial, _coconut.operator.mul)), Transformer))]
-    x = transform(fit(parallel_mconcat(stages), 2), 3)
-    assert transform(fit(parallel_mconcat(stages), 2), 3) == 72, ('Mconcat does not order the stages correctly.')
+def test_one_hot_encoder():
+    df = pd.DataFrame({'some_id': [1, 2, 2, 1], 'some_other_id': [1, 2, 3, 3]})
+    feature_stage = pipeline([one_hot_encoder('some_id'), one_hot_encoder('some_other_id')])
+    estimator = assembler(feature_stage, 'assembled_column')
+    feats = (np.array)(fit_transform(estimator, df)['assembled_column'].tolist())
+    expected_feats = np.array([[1, 0, 1, 0, 0], [0, 1, 0, 1, 0], [0, 1, 0, 0, 1], [1, 0, 0, 0, 1]])
+    assert np.allclose(feats, expected_feats), 'One-hot encoding incorrect'

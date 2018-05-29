@@ -1,0 +1,14 @@
+import pipeline as pipe
+
+def transform(transformer, name, df) =
+    xformed_df = pipe.transform(transformer, df)
+    columns_to_assemble = [col for col in xformed_df if col not in df]
+    values = xformed_df[columns_to_assemble].values.tolist()
+    xformed_df.drop(columns=columns_to_assemble).assign(**{name: values})
+
+def fit(pipeline_stage, name, df) =
+    transformer = pipe.fit(pipeline_stage, df)
+    transform$(transformer, name) |> pipe.Transformer
+
+def assembler(pipeline_stage, name) = fit$(pipeline_stage, name) |> pipe.Estimator
+

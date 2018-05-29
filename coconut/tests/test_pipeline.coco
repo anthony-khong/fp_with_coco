@@ -9,11 +9,11 @@ from pipeline import (
 def test_fit():
     estimator = Estimator(x -> Transformer(y -> x + y))
     transformer = fit(estimator, 1)
-    assert transformer.transform_fn(2) == 3, 'Fit function on Estimator is incorrect.'
+    assert transformer.xform_fn(2) == 3, 'Fit function on Estimator is incorrect.'
 
     transformer = Transformer(x -> x + 1)
     fitted_transformer = fit(transformer, 2)
-    assert fitted_transformer.transform_fn(3) == 4, 'Fit function on Transformer incorrect.'
+    assert fitted_transformer.xform_fn(3) == 4, 'Fit function on Transformer incorrect.'
 
 def test_transform():
     with pytest.raises(MatchError):
@@ -25,10 +25,10 @@ def test_transform():
 def test_mappend():
     xformer0 = Transformer(x -> x + 1)
     xformer1 = Transformer(x -> x * x)
-    assert mappend(xformer0, xformer1).transform_fn(5) == 36, (
+    assert mappend(xformer0, xformer1).xform_fn(5) == 36, (
             'Mappend function on (Transformer, Transformer) incorrect.'
             )
-    assert mappend(xformer1, xformer0).transform_fn(5) == 26, (
+    assert mappend(xformer1, xformer0).xform_fn(5) == 26, (
             'Mappend function on (Transformer, Transformer) ignores order.'
             )
 
@@ -61,10 +61,9 @@ def square(x) = x * x
 def test_parallel_mconcat():
     stages = [
             Transformer((+)$(1)),
-            Estimator(add_transform),
-            Estimator(Transformer..(+)($))
+            Estimator(Transformer..((+)$)),
             Transformer(square),
-            Estimator(Transformer..(*)($))
+            Estimator(Transformer..((*)$))
             ]
     x = transform(fit(parallel_mconcat(stages), 2), 3)
     assert transform(fit(parallel_mconcat(stages), 2), 3) == 72, (

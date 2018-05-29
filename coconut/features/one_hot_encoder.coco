@@ -2,11 +2,20 @@ import numpy as np
 
 from pipeline import Estimator, Transformer
 
-def one_hot_encoder_with_max_bins(column, weight_column, max_bins):
-    return fit_with_max_bins$(column, weight_column, max_bins) |> Estimator
+def transform(column, factors, df) =
+    name = factor -> f'feat:{column}_is_{factor}'
+    feats = {name(f): (df[column].values == f).astype(float) for f in factors}
+    df.assign(**feats)
+
+def fit(column, df) =
+    factors = np.unique(df[column])
+    transform$(column, factors) |> Transformer
+
+def one_hot_encoder(column) =
+    fit$(column) |> Estimator
 
 def fit_with_max_bins(column, weight_column, max_bins, df):
-    ix_map = map_of_indices(df[column])
+    ix_map = index_map(df[column])
     if max_bins >= len(ix_map):
         return fit(column, df)
     else:
@@ -15,7 +24,7 @@ def fit_with_max_bins(column, weight_column, max_bins, df):
         selected_factors = [f for f, w in f_weights.items() if w > w_cutoff]
         return transform$(column, selected_factors) |> Transformer
 
-def map_of_indices(values):
+def index_map(values):
     ix_map = {}
     for index, value in enumerate(values):
         if value in ix_map:
@@ -24,14 +33,6 @@ def map_of_indices(values):
             ix_map[value] = [index]
     return ix_map
 
-def one_hot_encoder(column):
-    return fit$(column) |> Estimator
+def one_hot_encoder_with_max_bins(column, weight_column, max_bins) =
+    fit_with_max_bins$(column, weight_column, max_bins) |> Estimator
 
-def fit(column, df):
-    factors = np.unique(df[column])
-    return transform$(column, factors) |> Transformer
-
-def transform(column, factors, df):
-    name = factor -> f'feat:{column}_is_{factor}'
-    feats = {name(f): (df[column].values == f).astype(float) for f in factors}
-    return df.assign(**feats)

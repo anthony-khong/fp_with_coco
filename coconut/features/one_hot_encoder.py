@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xaf0d9dad
+# __coconut_hash__ = 0x813c89f8
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
 
@@ -517,55 +517,46 @@ _coconut_MatchError, _coconut_count, _coconut_enumerate, _coconut_reversed, _coc
 
 # Compiled Coconut: -----------------------------------------------------------
 
-import pytest
+import numpy as np
 
 from pipeline import Estimator
 from pipeline import Transformer
-from pipeline import fit
-from pipeline import transform
-from pipeline import fit_transform
-from pipeline import mappend
-from pipeline import mconcat
-from pipeline import parallel_mconcat
-from pipeline import MatchError
 
-def test_fit():
-    estimator = Estimator(lambda x: Transformer(lambda y: x + y))
-    transformer = fit(estimator, 1)
-    assert transformer.xform_fn(2) == 3, 'Fit function on Estimator is incorrect.'
+@_coconut_tco
+def transform(column, factors, df):
+    name = lambda factor: f'feat:{column}_is_{factor}'
+    feats = {name(f): (df[column].values == f).astype(float) for f in factors}
+    return _coconut_tail_call(df.assign, **feats)
 
-    transformer = Transformer(lambda x: x + 1)
-    fitted_transformer = fit(transformer, 2)
-    assert fitted_transformer.xform_fn(3) == 4, 'Fit function on Transformer incorrect.'
+@_coconut_tco
+def fit(column, df):
+    factors = np.unique(df[column])
+    return _coconut_tail_call((Transformer), _coconut.functools.partial(transform, column, factors))
 
-def test_transform():
-    with pytest.raises(MatchError):
-        transform(Estimator(None), 1)
+@_coconut_tco
+def one_hot_encoder(column):
+    return _coconut_tail_call((Estimator), _coconut.functools.partial(fit, column))
 
-    transformer = Transformer(lambda x: x * x)
-    assert transform(transformer, 5) == 5 * 5, 'Transform function on Transformer incorrect.'
+@_coconut_tco
+def fit_with_max_bins(column, weight_column, max_bins, df):
+    ix_map = index_map(df[column])
+    if max_bins >= len(ix_map):
+        return _coconut_tail_call(fit, column, df)
+    else:
+        f_weights = {f: np.sum(df[weight_column].values[ix]) for f, ix in ix_map.items()}
+        w_cutoff = ((list)((sorted)(f_weights.values())))[-(max_bins + 1)]
+        selected_factors = [f for f, w in f_weights.items() if w > w_cutoff]
+        return _coconut_tail_call((Transformer), _coconut.functools.partial(transform, column, selected_factors))
 
-def test_mappend():
-    xformer0 = Transformer(lambda x: x + 1)
-    xformer1 = Transformer(lambda x: x * x)
-    assert mappend(xformer0, xformer1).xform_fn(5) == 36, ('Mappend function on (Transformer, Transformer) incorrect.')
-    assert mappend(xformer1, xformer0).xform_fn(5) == 26, ('Mappend function on (Transformer, Transformer) ignores order.')
+def index_map(values):
+    ix_map = {}
+    for index, value in enumerate(values):
+        if value in ix_map:
+            ix_map[value].append(value)
+        else:
+            ix_map[value] = [index]
+    return ix_map
 
-    estimator0 = Estimator(lambda _: Transformer(lambda x: x + 1))
-    assert fit_transform(mappend(estimator0, xformer0), 1) == 3, ('Mappend function on (Estimator, Transformer) incorrect.')
-    assert fit_transform(mappend(xformer1, estimator0), 2) == 5, ('Mappend function on (Transformer, Estimator) incorrect.')
-
-    estimator1 = Estimator(lambda _: Transformer(lambda x: x * x * x))
-    assert fit_transform(mappend(estimator0, estimator1), 1) == 8, ('Mappend function on (Estimator, Estimator) incorrect.')
-
-def test_mconcat():
-    stages = [Transformer(lambda x: x + 1), Estimator(lambda x: Transformer(lambda y: x + y)), Transformer(lambda x: x * x), Estimator(lambda x: Transformer(lambda y: x * y))]
-    assert transform(fit(mconcat(stages), 2), 3) == 72, ('Mconcat does not order the stages correctly.')
-
-# This is required because parallel_mconcat cannot handle unpicklable objects
-def square(x):
-    return x * x
-def test_parallel_mconcat():
-    stages = [Transformer(_coconut.functools.partial(_coconut.operator.add, 1)), Estimator(_coconut_forward_compose((_coconut.functools.partial(_coconut.functools.partial, _coconut.operator.add)), Transformer)), Transformer(square), Estimator(_coconut_forward_compose((_coconut.functools.partial(_coconut.functools.partial, _coconut.operator.mul)), Transformer))]
-    x = transform(fit(parallel_mconcat(stages), 2), 3)
-    assert transform(fit(parallel_mconcat(stages), 2), 3) == 72, ('Mconcat does not order the stages correctly.')
+@_coconut_tco
+def one_hot_encoder_with_max_bins(column, weight_column, max_bins):
+    return _coconut_tail_call((Estimator), _coconut.functools.partial(fit_with_max_bins, column, weight_column, max_bins))
