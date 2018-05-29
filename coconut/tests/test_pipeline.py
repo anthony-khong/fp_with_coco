@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x3759f031
+# __coconut_hash__ = 0x75f284d0
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
 
@@ -572,9 +572,9 @@ def test_back_to_back_stages():
     assert np.allclose(fitted_df.c, [3, 4, 5]), 'Back to back xform does not work.'
 
     @_coconut_tco
-    def dependent_fit(df):
-        assert 'b' in df
-        return _coconut_tail_call(Transformer, lambda df: df.assign(c=df.b * 2))
+    def dependent_fit(train_df):
+        sum_b = train_df.b.sum()
+        return _coconut_tail_call(Transformer, lambda test_df: test_df.assign(c=test_df.a + sum_b))
     estimator = mconcat([Transformer(lambda df: df.assign(b=df.a + 1)), Estimator(dependent_fit)])
-    fitted_df = fit_transform(estimator, df)
-    assert np.allclose(fitted_df.c, [4, 6, 8]), 'Back to back fit does not work.'
+    fitted_df = transform(fit(estimator, df), df.assign(a=[-1, -2, -3]))
+    assert np.allclose(fitted_df.c, [8, 7, 6]), 'Back to back fit does not work.'

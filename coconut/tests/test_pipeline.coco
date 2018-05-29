@@ -68,12 +68,12 @@ def test_back_to_back_stages():
     fitted_df = fit_transform(transformer, df)
     assert np.allclose(fitted_df.c, [3, 4, 5]), 'Back to back xform does not work.'
 
-    def dependent_fit(df):
-        assert 'b' in df
-        return Transformer(df -> df.assign(c=df.b * 2))
+    def dependent_fit(train_df):
+        sum_b = train_df.b.sum()
+        return Transformer(test_df -> test_df.assign(c=test_df.a + sum_b))
     estimator = mconcat([
             Transformer(df -> df.assign(b=df.a + 1)),
             Estimator(dependent_fit)
             ])
-    fitted_df = fit_transform(estimator, df)
-    assert np.allclose(fitted_df.c, [4, 6, 8]), 'Back to back fit does not work.'
+    fitted_df = transform(fit(estimator, df), df.assign(a=[-1, -2, -3]))
+    assert np.allclose(fitted_df.c, [8, 7, 6]), 'Back to back fit does not work.'
