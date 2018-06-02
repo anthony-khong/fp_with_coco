@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x40776840
+# __coconut_hash__ = 0xe685b395
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
 
@@ -16,18 +16,11 @@ _coconut_sys.path.remove(_coconut_file_path)
 
 # Compiled Coconut: -----------------------------------------------------------
 
-import numpy as np
-import pandas as pd
+@_coconut_tco
+def sieve(numbers):
+    x = next(numbers)
+    return _coconut_tail_call(_coconut.itertools.chain.from_iterable, (f() for f in (lambda: [x], lambda: sieve(filter(lambda n: n % x != 0, numbers)))))
 
-from pipeline import fit_transform
-from pipeline import pipeline
-from features import assembler
-from features import one_hot_encoder
-
-def test_one_hot_encoder():
-    df = pd.DataFrame({'some_id': [1, 2, 2, 1], 'some_other_id': [1, 2, 3, 3]})
-    feature_stage = pipeline([one_hot_encoder('some_id'), one_hot_encoder('some_other_id')])
-    estimator = assembler(feature_stage, 'assembled_column')
-    feats = (np.array)(fit_transform(estimator, df)['assembled_column'].tolist())
-    expected_feats = np.array([[1, 0, 1, 0, 0], [0, 1, 0, 1, 0], [0, 1, 0, 0, 1], [1, 0, 0, 0, 1]])
-    assert np.allclose(feats, expected_feats), 'One-hot encoding incorrect'
+if __name__ == '__main__':
+    from itertools import count
+    (print)((list)(_coconut_igetitem((sieve)(count(2)), _coconut.slice(None, 3000))))
