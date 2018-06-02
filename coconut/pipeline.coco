@@ -22,8 +22,6 @@ def fit(Estimator(fit_fn), df) = fit_fn(df)
 @addpattern(fit)
 def fit(Transformer(xform_fn), _) = Transformer(xform_fn)
 
-def fit_transform(stage, df) = transform(fit(stage, df), df)
-
 def mempty() = Transformer(df -> df)
 
 def mappend(Transformer(fn0), Transformer(fn1)) = Transformer(fn1..fn0)
@@ -31,8 +29,8 @@ def mappend(Transformer(fn0), Transformer(fn1)) = Transformer(fn1..fn0)
 @addpattern(mappend)
 def mappend(stage0, stage1) =
     def fit_fn(df) =
-        xformer0 = fit(stage0, df)
-        xformer1 = fit(stage1, transform(xformer0, df))
+        xformer0 = df |> fit$(stage0)
+        xformer1 = df |> transform$(xformer0) |> fit$(stage1)
         mappend(xformer0, xformer1)
     Estimator(fit_fn)
 
@@ -41,3 +39,5 @@ pipeline = mconcat
 
 def parallel_mconcat(stages) = Estimator(df -> mconcat(parallel_map(fit$(?, df), stages)))
 parallel_pipeline = parallel_mconcat
+
+def fit_transform(stage, df) = transform(fit(stage, df), df)

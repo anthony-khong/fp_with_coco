@@ -1,20 +1,23 @@
 import pandas as pd
 
-from pipeline import Transformer, pipeline
+from pipeline import Transformer, pipeline, fit, transform
 from features import one_hot_encoder
-from network import feedforward
+from models.lgbm import lgbm
 
 def add_column(name, fn):
-    return df.assign(**{name: fn(df)}) |> Transformer
+    return Transformer(df -> df.assign(**{name: fn(df)}))
 
 def add_as_feature(name):
-    return df.assign(**{f'feat:{name}': df[name]})
+    return Transformer(df -> df.assign(**{f'feat:{name}': df[name]}))
 
+# TODO: create a functor for estimator
 if __name__ == '__main__':
     df = pd.read_csv('titanic.csv')
     model = pipeline([
         # Data processing
         add_column('CabinStr', df -> df.Cabin.astype(str)),
+        add_column('EmbarkedStr', df -> df.Embarked.astype(str)),
+        add_column('target:survived', df -> df.Survived),
 
         # Feature engineering
         add_as_feature('Fare'),
@@ -22,12 +25,16 @@ if __name__ == '__main__':
         add_as_feature('SibSp'),
         add_as_feature('SibSp'),
         one_hot_encoder('Parch'),
-        one_hot_encoder('Embarked'),
+        one_hot_encoder('EmbarkedStr'),
         one_hot_encoder('CabinStr'),
         one_hot_encoder('Pclass'),
         add_column('feat:name_length', df -> len(df.Name)),
-        add_column('feat:is_married_woman', df -> [int('Mrs.') in x for x in df.Name.val]),
+        add_column('feat:is_married_woman', df -> [int('Mrs.' in x) for x in df.Name]),
 
         # Model
-
+        lgbm(learning_rate=0.01, num_boost=200)
         ])
+
+    fitted_model = fit(model, df)
+    xformed_df = transform(fitted_model, df)
+

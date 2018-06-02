@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x9675e2df
+# __coconut_hash__ = 0xfded6583
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
 
@@ -517,46 +517,24 @@ _coconut_MatchError, _coconut_count, _coconut_enumerate, _coconut_reversed, _coc
 
 # Compiled Coconut: -----------------------------------------------------------
 
-import numpy as np
+import lightgbm as lgb
 
 from pipeline import Estimator
 from pipeline import Transformer
 
 @_coconut_tco
-def one_hot_encoder(column):
-    return _coconut_tail_call(Estimator, _coconut.functools.partial(fit, column))
+def lgbm(**params):
+    return _coconut_tail_call(Estimator, _coconut.functools.partial(fit, params))
 
 @_coconut_tco
-def fit(column, df):
-    factors = np.unique(df[column])
-    return _coconut_tail_call((Transformer), _coconut.functools.partial(transform, column, factors))
+def fit(params, df):
+    features = df[[c for c in df if 'feat:' in c]].values
+    targets = df[[c for c in df if 'target:' in c]].values.flatten()
+    lgb_dataset = lgb.Dataset(features, targets)
+    gbm = lgb.train(params, lgb_dataset, params.get('num_boost_round', 100))
+    return _coconut_tail_call(Transformer, _coconut.functools.partial(transform, gbm))
 
 @_coconut_tco
-def transform(column, factors, df):
-    name = lambda factor: f'feat:{column}_is_{factor}'
-    feats = {name(f): (df[column].values == f).astype(float) for f in factors}
-    return _coconut_tail_call(df.assign, **feats)
-
-@_coconut_tco
-def one_hot_encoder_with_max_bins(column, weight_column, max_bins):
-    return _coconut_tail_call((Estimator), _coconut.functools.partial(fit_with_max_bins, column, weight_column, max_bins))
-
-@_coconut_tco
-def fit_with_max_bins(column, weight_column, max_bins, df):
-    ix_map = index_map(df[column])
-    if max_bins >= len(ix_map):
-        return _coconut_tail_call(fit, column, df)
-    else:
-        f_weights = {f: np.sum(df[weight_column].values[ix]) for f, ix in ix_map.items()}
-        w_cutoff = ((list)((sorted)(f_weights.values())))[-(max_bins + 1)]
-        selected_factors = [f for f, w in f_weights.items() if w > w_cutoff]
-        return _coconut_tail_call((Transformer), _coconut.functools.partial(transform, column, selected_factors))
-
-def index_map(values):
-    ix_map = {}
-    for index, value in enumerate(values):
-        if value in ix_map:
-            ix_map[value].append(value)
-        else:
-            ix_map[value] = [index]
-    return ix_map
+def transform(gbm, df):
+    features = df[[c for c in df if 'feat:' in c]].values
+    return _coconut_tail_call(df.assign, prediction=gbm.predict(features))

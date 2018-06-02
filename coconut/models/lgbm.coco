@@ -1,0 +1,16 @@
+import lightgbm as lgb
+
+from pipeline import Estimator, Transformer
+
+def lgbm(**params) = Estimator(fit$(params))
+
+def fit(params, df) =
+    features = df[[c for c in df if 'feat:' in c]].values
+    targets = df[[c for c in df if 'target:' in c]].values.flatten()
+    lgb_dataset = lgb.Dataset(features, targets)
+    gbm = lgb.train(params, lgb_dataset, params.get('num_boost_round', 100))
+    Transformer(transform$(gbm))
+
+def transform(gbm, df) =
+    features = df[[c for c in df if 'feat:' in c]].values
+    df.assign(prediction=gbm.predict(features))
