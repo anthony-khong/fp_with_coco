@@ -15,9 +15,9 @@ pipeline :: [PipelineStage] -> PipelineStage
 data Estimator(fit_fn)
 data Transformer(xform_fn)
 
-def transform(Transformer(xform_fn), df) = xform_fn(copy(df))
+def transform(Transformer(xform_fn), df) = xform_fn(df)
 
-def fit(Estimator(fit_fn), df) = fit_fn(copy(df))
+def fit(Estimator(fit_fn), df) = fit_fn(df)
 
 @addpattern(fit)
 def fit(Transformer(xform_fn), _) = Transformer(xform_fn)
@@ -38,8 +38,6 @@ def mappend(stage0, stage1) =
 
 def mconcat(stages) = reduce(mappend, stages)
 pipeline = mconcat
-
-def copy(x) = x.copy() if hasattr(x, 'copy') else x
 
 def parallel_mconcat(stages) = Estimator(df -> mconcat(parallel_map(fit$(?, df), stages)))
 parallel_pipeline = parallel_mconcat
