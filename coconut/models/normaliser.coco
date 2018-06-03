@@ -1,0 +1,16 @@
+import numpy as np
+
+from pipeline import Estimator, Transformer
+
+def fit(df) =
+    features = df[[c for c in df if 'feat:' in c]].values.astype('float32')
+    means, stds = np.mean(features, axis=0), np.std(features, axis=0)
+    Transformer(transform$(means, stds))
+
+def transform(means, stds, df) =
+    feature_columns = [c for c in df if 'feat:' in c]
+    features = df[feature_columns].values.astype('float32')
+    normalised = (features - means) / stds
+    df.assign(**{f: x for f, x in zip(feature_columns, normalised.T)})
+
+normalise_features = Estimator(fit)

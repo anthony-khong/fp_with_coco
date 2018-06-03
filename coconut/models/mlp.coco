@@ -1,0 +1,43 @@
+import numpy as np
+import tensorflow as tf
+
+from pipeline import Estimator, Transformer
+
+def mlp(**network_params) = Estimator(fit$(network_params))
+
+def fit(network_params, df) =
+    features = df[[c for c in df if 'feat:' in c]].values.astype('float32')
+    targets = df[[c for c in df if 'target:' in c]].values.astype('float32')
+    n_features, n_targets = features.shape[1], targets.shape[1]
+    feat_tensor = tf.placeholder(tf.float32, shape=[None, n_features])
+    target_tensor = tf.placeholder(tf.float32, shape=[None, n_targets])
+    pred_tensor = (network_params['hidden_units'] + [n_targets]
+                    |> fold$(feat_tensor, (init, n) -> tf.layers.dense(init, n))
+                    |> tf.sigmoid)
+    loss = tf.losses.log_loss(target_tensor, pred_tensor)
+    train = tf.train.AdamOptimizer().minimize(loss)
+
+    sess = tf.Session()
+    sess.run(tf.global_variables_initializer())
+    m_size, n_epochs = network_params['minibatch_size'], network_params['n_epochs']
+    def minibatch_update(update_ix) =
+        shuffled_ixs = np.random.choice(np.arange(len(df)), m_size, replace=False)
+        feed_dict = {
+                feat_tensor: features[shuffled_ixs],
+                target_tensor: targets[shuffled_ixs]
+                }
+        _, loss_value = sess.run((train, loss), feed_dict)
+        loss_value
+    for epoch in range(n_epochs):
+        n_updates = len(df) / m_size |> int
+        minibatch_losses = [minibatch_update(update_ix) for update_ix in range(n_updates)]
+        mu, sigma = np.mean(minibatch_losses), np.std(minibatch_losses)
+        f'Loss in after {epoch + 1} epochs:\n{mu} +/- {sigma}' |> print
+    Transformer(transform$(sess, feat_tensor, pred_tensor))
+
+def transform(sess, feat_tensor, pred_tensor, df) =
+    features = df[[c for c in df if 'feat:' in c]].values.astype('float32')
+    predictions = sess.run(pred_tensor, feed_dict={feat_tensor: features})
+    df.assign(prediction=predictions)
+
+def fold(init, fn, iterable) = reduce(fn, iterable, init)
