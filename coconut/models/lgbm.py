@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x6667c5f2
+# __coconut_hash__ = 0x283b43de
 
 # Compiled with Coconut version 1.3.1 [Dead Parrot]
 
@@ -23,7 +23,7 @@ from pipeline import Transformer
 
 @_coconut_tco
 def lgbm(**params):
-    return _coconut_tail_call(Estimator, _coconut.functools.partial(fit, params))
+    return _coconut_tail_call((Estimator), _coconut.functools.partial(fit, params))
 
 @_coconut_tco
 def fit(params, df):
@@ -31,7 +31,7 @@ def fit(params, df):
     targets = df[[c for c in df if 'target:' in c]].values.flatten()
     lgb_dataset = lgb.Dataset(features, targets)
     gbm = lgb.train(params, lgb_dataset, params.get('num_boost_round', 100))
-    return _coconut_tail_call(Transformer, _coconut.functools.partial(transform, gbm))
+    return _coconut_tail_call((Transformer), _coconut.functools.partial(transform, gbm))
 
 @_coconut_tco
 def transform(gbm, df):

@@ -2,7 +2,7 @@ import pandas as pd
 
 from pipeline import Transformer, pipeline, fit, transform
 from features import one_hot_encoder
-from models.mlp import mlp
+from models.lgbm import lgbm
 from models.normaliser import normalise_features
 
 def add_column(name, fn):
